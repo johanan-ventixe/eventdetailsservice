@@ -80,6 +80,42 @@ public class EventDetailsService(DataContext context) : IEventDetailsService
         }
     }
 
+    public async Task<int> GetTicketsLeftAsync(string eventId)
+    {
+        try
+        {
+            var eventDetails = await _context.EventDetails
+                .FirstOrDefaultAsync(e => e.EventId == eventId);
+
+            return eventDetails?.TicketsLeft ?? 0;
+        }
+        catch (Exception ex)
+        {
+            throw new Exception($"Failed to get tickets left for event ID {eventId}: {ex.Message}", ex);
+        }
+    }
+
+    public async Task UpdateTicketsLeftAsync(string eventId, int newTicketsLeft)
+    {
+        try
+        {
+            var eventDetails = await _context.EventDetails
+                .FirstOrDefaultAsync(e => e.EventId == eventId);
+
+            if (eventDetails == null)
+                throw new Exception($"Event details for event ID {eventId} not found");
+
+            eventDetails.TicketsLeft = newTicketsLeft;
+
+            _context.EventDetails.Update(eventDetails);
+            await _context.SaveChangesAsync();
+        }
+        catch (Exception ex)
+        {
+            throw new Exception($"Failed to update tickets left for event ID {eventId}: {ex.Message}", ex);
+        }
+    }
+
     private static EventDetailsDto MapToEventDetailsDto(EventDetailsEntity entity)
     {
         return new EventDetailsDto

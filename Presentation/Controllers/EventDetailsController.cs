@@ -70,4 +70,43 @@ public class EventDetailsController(IEventDetailsService eventDetailsService) : 
             return StatusCode(500, $"Internal server error: {ex.Message}");
         }
     }
+
+    [HttpGet("event/{eventId}/tickets")]
+    public async Task<ActionResult<int>> GetTicketsLeft(string eventId)
+    {
+        try
+        {
+            var eventDetails = await _eventDetailsService.GetEventDetailsByEventIdAsync(eventId);
+            if (eventDetails == null)
+            {
+                return NotFound($"No details found for event ID {eventId}");
+            }
+            return Ok(eventDetails.TicketsLeft);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"Internal server error: {ex.Message}");
+        }
+    }
+
+    [HttpPatch("event/{eventId}/tickets/{newCount}")]
+    public async Task<IActionResult> UpdateTicketsCount(string eventId, int newCount)
+    {
+        try
+        {
+            var eventDetails = await _eventDetailsService.GetEventDetailsByEventIdAsync(eventId);
+            if (eventDetails == null)
+            {
+                return NotFound($"No details found for event ID {eventId}");
+            }
+
+            eventDetails.TicketsLeft = newCount;
+            await _eventDetailsService.UpdateEventDetailsByEventIdAsync(eventId, eventDetails);
+            return Ok();
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"Internal server error: {ex.Message}");
+        }
+    }
 }
